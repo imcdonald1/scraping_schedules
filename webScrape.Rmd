@@ -1,0 +1,38 @@
+---
+title: "Web Scrape"
+output:
+  html_document:
+    df_print: paged
+---
+
+Import needed libraries
+```{r}
+library("rvest")
+library("tidyr")
+```
+
+Create functions to scrape a single schedule and get the classes from it
+```{r}
+
+scrapeSchedule <- function(url){
+  schedule_html <- read_html(url)
+
+  totalClass <- schedule_html %>% html_nodes("tr:not(.notesrow):not(.hdr_row)")
+  
+  subjects <- totalClass %>% html_nodes(".subj") %>% html_text()
+  courseNums <- totalClass %>% html_nodes(".cat_num") %>% html_text()
+  sections <- totalClass %>% html_nodes(".sect") %>% html_text() %>% as.integer()
+  courseNames <- totalClass %>% html_nodes(".title") %>% html_text() 
+  totalEnrollment <- totalClass %>% html_nodes(".enrtot") %>% html_text() %>% as.integer()
+  
+  df <- cbind(subjects, courseNums, sections, courseNames, totalEnrollment)
+  finalDF <- as.data.frame(df)
+  return(finalDF)
+}
+```
+
+use functions to scrape any schedule url
+```{r}
+computerScienceSpring <- scrapeSchedule("http://ems.csuchico.edu/APSS/schedule/spr2020/CSCI.shtml")
+mathSpring <- scrapeSchedule("http://ems.csuchico.edu/APSS/schedule/spr2020/MATH.shtml")
+```
